@@ -119,7 +119,7 @@ function updateSessionUI() {
     loginLink.textContent = "Sign out";
     loginLink.setAttribute("href", "#");
   } else {
-    sessionStatusEl.textContent = "Guest mode — not signed in";
+    sessionStatusEl.textContent = "Guest mode - not signed in";
     settingsLink?.classList.add("is-hidden");
     loginLink.textContent = "Log in / Sign up";
     loginLink.setAttribute("href", "login.html");
@@ -128,7 +128,7 @@ function updateSessionUI() {
 
 async function fetchSubjects() {
   if (!state.user) return;
-  setDataLoading(true, "Loading your study data…");
+  setDataLoading(true, "Loading your study dataâ€¦");
   const { data, error } = await supabase
     .from("subjects")
     .select("id, name, created_at, topics (id, name, status, notes, created_at)")

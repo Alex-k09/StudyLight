@@ -437,7 +437,9 @@
       }
       .topic{
         display:flex;
-        flex-direction:column;
+        flex-wrap:wrap;
+        align-items:center;
+        justify-content:space-between;
         gap:12px;
         border:1px solid var(--line);
         border-radius:20px;
@@ -445,13 +447,17 @@
         background:var(--soft);
       }
       .topic input[type="text"]{
+        flex:1 1 100%;
         width:100%;
       }
       .slider{
+        flex:1 1 calc(100% - 72px);
         width:100%;
         background:#fff;
+        min-width:0;
       }
       .topic .icon-btn{
+        flex:0 0 44px;
         margin-left:auto;
       }
       .footer-note{

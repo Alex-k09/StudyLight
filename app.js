@@ -476,24 +476,24 @@ function handleExport() {
 }
 
 function handleImport(file) {
-  if (state.user) {
-    setAppMessage("Import is only available in guest mode.", "error");
+  if (!state.user) {
+    setAppMessage("Sign in to import a backup into your account.", "error");
     return;
   }
   const reader = new FileReader();
-  reader.onload = () => {
+  reader.onload = async () => {
     try {
-      const parsed = JSON.parse(reader.result);
+      const text = typeof reader.result === "string" ? reader.result : "";
+      const parsed = JSON.parse(text);
       if (!Array.isArray(parsed)) throw new Error("Invalid backup");
-      state.subjects = parsed;
-      state.guestSubjects = cloneSubjects(parsed);
-      persistGuest();
-      renderAll();
+      await importBackupForAccount(parsed);
       setAppMessage("Backup imported.", "info");
-    } catch {
-      setAppMessage("That file could not be imported.", "error");
+    } catch (error) {
+      console.error(error);
+      setAppMessage(error.message || "That file could not be imported.", "error");
     }
   };
+  reader.onerror = () => setAppMessage("That file could not be imported.", "error");
   reader.readAsText(file);
 }
 
@@ -555,4 +555,61 @@ function escapeHtml(str = "") {
 function generateId() {
   if (typeof crypto?.randomUUID === "function") return crypto.randomUUID();
   return Math.random().toString(36).slice(2);
+}
+
+async function importBackupForAccount(rawSubjects) {
+  if (!state.user) return;
+  setDataLoading(true, "Importing backup…");
+  const normalized = normalizeBackupSubjects(rawSubjects);
+  try {
+    const { error: deleteError } = await supabase.from("subjects").delete().eq("user_id", state.user.id);
+    if (deleteError) throw deleteError;
+
+    for (const subject of normalized) {
+      const { data: insertedSubject, error: subjectError } = await supabase
+        .from("subjects")
+        .insert({ name: subject.name || "Imported subject", user_id: state.user.id })
+        .select("id")
+        .single();
+      if (subjectError) throw subjectError;
+
+      if (subject.topics.length) {
+        const topicRows = subject.topics.map((topic) => ({
+          subject_id: insertedSubject.id,
+          user_id: state.user.id,
+          name: topic.name,
+          status: topic.status,
+          notes: topic.notes,
+        }));
+        const { error: topicsError } = await supabase.from("topics").insert(topicRows);
+        if (topicsError) throw topicsError;
+      }
+    }
+
+    await fetchSubjects();
+  } finally {
+    setDataLoading(false);
+  }
+}
+
+function normalizeBackupSubjects(rawSubjects) {
+  const allowedStatuses = new Set(["red", "amber", "green"]);
+  return (rawSubjects || [])
+    .filter((subject) => subject && typeof subject === "object")
+    .map((subject, index) => {
+      const name =
+        typeof subject.name === "string" && subject.name.trim()
+          ? subject.name.trim()
+          : `Imported subject ${index + 1}`;
+      const topics = Array.isArray(subject.topics)
+        ? subject.topics
+            .filter((topic) => topic && typeof topic === "object")
+            .map((topic) => ({
+              name: typeof topic.name === "string" ? topic.name.trim() : "",
+              status: allowedStatuses.has(topic.status) ? topic.status : "red",
+              notes: typeof topic.notes === "string" ? topic.notes : "",
+            }))
+        : [];
+      return { name, topics };
+    });
 }

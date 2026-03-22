@@ -379,19 +379,43 @@
       }
       .group-head{
         padding:10px 12px;
+        flex-direction:column;
+        align-items:flex-start;
+        gap:8px;
+      }
+      .group-left{
+        width:100%;
+        flex-direction:column;
+        align-items:flex-start;
+        gap:8px;
       }
       .group-left > input{
         width:100%;
+        min-width:0;
       }
       .group-actions{
         width:100%;
-        justify-content:flex-start;
+        justify-content:space-between;
+        gap:8px;
+        flex-wrap:wrap;
       }
       .topic{
         grid-template-columns:1fr;
+        padding:14px 12px;
+        gap:10px;
       }
       .slider{
         width:100%;
+      }
+      .topic input[type="text"]{
+        width:100%;
+      }
+      .topic .icon-btn{
+        margin-left:auto;
+      }
+      .chev{
+        width:40px;
+        height:40px;
       }
       .footer-note{
         font-size:11px;

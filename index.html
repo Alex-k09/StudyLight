@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Study Traffic Lights</title>
+  <style>
+    :root{
+      --bg:#f5f5f5;
+      --card:#ffffff;
+      --soft:#f2f2f2;
+      --line:#e6e6e6;
+      --text:#171717;
+      --muted:#6b7280;
+      --red:#ef4444;
+      --amber:#fbbf24;
+      --green:#10b981;
+      --shadow:0 8px 30px rgba(0,0,0,.06);
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    .wrap{
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 32px 18px 44px;
+    }
+    .top-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .top-actions{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .pill{
+      display:inline-flex;
+      gap:10px;
+      align-items:center;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:8px 12px;
+      color:var(--muted);
+      box-shadow: var(--shadow);
+      font-size:14px;
+    }
+    h1{
+      margin:18px 0 8px;
+      font-size:clamp(30px, 4vw, 44px);
+      line-height:1.05;
+      letter-spacing:-.03em;
+    }
+    .sub{
+      color:var(--muted);
+      max-width: 680px;
+      margin:0 0 20px;
+      font-size:16px;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:30px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .toolbar{
+      display:grid;
+      grid-template-columns: minmax(280px, 1fr) auto auto auto;
+      gap:12px;
+      padding:20px;
+      border-bottom:1px solid var(--line);
+      background:#fff;
+    }
+    input[type="text"]{
+      width:100%;
+      border:1px solid var(--line);
+      background:var(--soft);
+      border-radius:16px;
+      height:46px;
+      padding:0 15px;
+      font-size:16px;
+      outline:none;
+    }
+    input[type="text"]:focus{
+      border-color:#cfcfcf;
+      background:#fff;
+    }
+    button{
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--text);
+      height:46px;
+      padding:0 15px;
+      border-radius:16px;
+      font-size:15px;
+      cursor:pointer;
+      transition:.18s ease;
+      white-space:nowrap;
+    }
+    button:hover{ transform:translateY(-1px); background:#fafafa; }
+    button.primary{
+      background:var(--text);
+      color:#fff;
+      border-color:var(--text);
+    }
+    button.primary:hover{ background:#262626; }
+    .stats{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      padding: 20px 20px 20px;
+      background:#fff;
+    }
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:var(--soft);
+      color:var(--muted);
+      font-size:14px;
+    }
+    .dot{
+      width:10px; height:10px; border-radius:50%;
+      display:inline-block;
+    }
+    .red{background:var(--red)}
+    .amber{background:var(--amber)}
+    .green{background:var(--green)}
+    .groups{
+      padding: 0 18px 18px;
+      background:#fff;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .group{
+      border:1px solid var(--line);
+      border-radius:22px;
+      overflow:hidden;
+      background:#fff;
+    }
+    .group-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px 14px;
+      background:#fafafa;
+      border-bottom:1px solid var(--line);
+    }
+    .group-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      flex:1;
+    }
+    .group-left > input{
+      flex: 0 1 360px;
+      min-width: 180px;
+    }
+    .chev{
+      width:44px;height:44px;padding:0;border-radius:14px;
+      font-size:18px; line-height:1;
+    }
+    .subject-input{
+      max-width:360px;
+      background:#fff !important;
+    }
+    .group-actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .count-mini{
+      color:var(--muted);
+      font-size:12px;
+      margin-left:6px;
+    }
+    .topics{
+      display:block;
+    }
+    .topics.hidden{ display:none; }
+    .topic{
+      display:grid;
+      grid-template-columns: minmax(220px, 1fr) 170px 44px;
+      gap:12px;
+      align-items:center;
+      padding:12px 14px;
+      border-bottom:1px solid var(--line);
+    }
+    .topic:last-child{ border-bottom:none; }
+    .topic input[type="text"]{
+      min-width: 0;
+    }
+    .slider{
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:10px;
+      padding:6px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:#fff;
+      width:170px;
+    }
+    .light{
+      width:40px;
+      height:40px;
+      border-radius:999px;
+      border:none;
+      padding:0;
+      position:relative;
+      background:#f1f1f1;
+    }
+    .light span{
+      width:16px; height:16px; border-radius:50%;
+      display:block; margin:auto;
+    }
+    .light[data-status="red"] span{ background:var(--red); }
+    .light[data-status="amber"] span{ background:var(--amber); }
+    .light[data-status="green"] span{ background:var(--green); }
+    .light.active[data-status="red"]{ background:var(--red); box-shadow:0 0 0 4px rgba(239,68,68,.14); }
+    .light.active[data-status="amber"]{ background:var(--amber); box-shadow:0 0 0 4px rgba(251,191,36,.18); }
+    .light.active[data-status="green"]{ background:var(--green); box-shadow:0 0 0 4px rgba(16,185,129,.14); }
+    .light.active span{ background:#fff !important; }
+    .icon-btn{
+      width:40px; height:40px; padding:0; border-radius:14px;
+      font-size:18px;
+    }
+    .empty{
+      padding:26px 16px;
+      text-align:center;
+      color:var(--muted);
+      border:1px dashed var(--line);
+      border-radius:22px;
+      background:#fff;
+    }
+    .footer-note{
+      margin-top:14px;
+      color:var(--muted);
+      font-size:12px;
+      text-align:center;
+    }
+    .session-note{
+      color:var(--muted);
+      font-size:14px;
+    }
+    .auth-link{
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--text);
+      padding:10px 18px;
+      border-radius:999px;
+      text-decoration:none;
+      font-size:14px;
+      font-weight:500;
+      transition:.18s ease;
+    }
+    .auth-link:hover{
+      background:#f8f8f8;
+      transform:translateY(-1px);
+    }
+    .is-hidden{ display:none !important; }
+    .hidden-file{ display:none; }
+    .topics.is-collapsed{ display:none; }
+    .app-message{
+      margin:16px 20px 0;
+      padding:12px 16px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:#fff9eb;
+      color:#92400e;
+      font-size:14px;
+      box-shadow:var(--shadow);
+    }
+    .hidden{ display:none !important; }
+
+    @media (max-width: 780px){
+      .wrap{
+        padding: 22px 14px 32px;
+      }
+      .toolbar{
+        grid-template-columns:1fr 1fr;
+      }
+      .group-head{
+        flex-direction:column;
+        align-items:stretch;
+      }
+      .group-left{
+        align-items:flex-start;
+      }
+      .group-left > input{
+        flex: 1 1 auto;
+        max-width: none;
+        width: 100%;
+      }
+      .group-actions{
+        justify-content:flex-start;
+      }
+      .topic{
+        grid-template-columns:1fr;
+        gap:10px;
+      }
+      .slider{
+        width:max-content;
+      }
+    }
+    @media (max-width: 560px){
+      .toolbar{
+        grid-template-columns:1fr;
+      }
+      .group-left{
+        flex-wrap:wrap;
+      }
+      .count-mini{
+        margin-left: 50px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top-row">
+      <div class="pill">● Study traffic lights</div>
+      <div class="top-actions">
+        <span id="sessionStatus" class="session-note">Guest mode — not signed in</span>
+        <a id="settingsLink" class="auth-link is-hidden" href="settings.html">Settings</a>
+        <a id="loginLink" class="auth-link" href="login.html">Log in / Sign up</a>
+      </div>
+    </div>
+    <h1>Topic confidence list</h1>
+    <p class="sub">Add subjects, add topics inside each one, collapse them when you want less clutter, and everything saves automatically on your PC in this browser.</p>
+
+    <div class="card">
+      <div class="toolbar">
+        <input id="newSubject" type="text" placeholder="Add a subject, e.g. English" />
+        <button id="addSubjectBtn" class="primary">Add subject</button>
+        <button id="exportBtn">Export backup</button>
+        <button id="importBtn">Import backup</button>
+        <input id="importFile" class="hidden-file" type="file" accept=".json,application/json" />
+      </div>
+
+      <div id="appMessage" class="app-message hidden"></div>
+      <div id="dataLoading" class="empty hidden">Loading your study data…</div>
+
+      <div class="stats" id="stats"></div>
+
+      <div class="groups" id="groups"></div>
+    </div>
+
+    <div class="footer-note">Saved automatically in your browser. Use Export backup if you want a file copy too.</div>
+  </div>
+
+    <script type="module" src="app.js"></script>
+
+</body>
+</html>
+
+

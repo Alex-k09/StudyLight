@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FocusLight • Settings</title>
+  <style>
+    :root {
+      --bg:#f8f9fb;
+      --panel:#ffffff;
+      --line:#e4e7f2;
+      --text:#0f172a;
+      --muted:#6b7280;
+      --accent:#171717;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      display:flex;
+      justify-content:center;
+      padding:36px 16px 60px;
+    }
+    .settings-shell{
+      width:min(960px,100%);
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:28px;
+      padding:40px;
+      display:flex;
+      flex-direction:column;
+      gap:24px;
+    }
+    .settings-head{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+    .settings-head h1{margin:8px 0 12px;font-size:clamp(30px,4vw,40px);}
+    .settings-head p{margin:0;color:var(--muted);}
+    .settings-actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
+    .settings-actions a,
+    .settings-actions button{border:1px solid var(--line);background:#fff;color:var(--text);padding:10px 18px;border-radius:999px;font-weight:500;text-decoration:none;cursor:pointer;}
+    .settings-actions button{background:var(--accent);color:#fff;border-color:var(--accent);} 
+    .settings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;}
+    .settings-card{border:1px solid var(--line);border-radius:20px;padding:22px;background:#fdfdfd;display:flex;flex-direction:column;gap:12px;}
+    .settings-card h2{margin:0;font-size:20px;}
+    label{font-size:14px;color:var(--muted);display:flex;flex-direction:column;gap:6px;}
+    input[type="email"],input[type="password"]{height:46px;border-radius:14px;border:1px solid var(--line);padding:0 14px;font-size:15px;background:#fff;}
+    button.primary{height:46px;border-radius:14px;border:none;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;}
+    .settings-status{padding:12px 16px;border-radius:16px;border:1px solid var(--line);background:#fff;color:var(--muted);min-height:44px;}
+    .settings-status[data-state="error"]{color:#b91c1c;border-color:#fecaca;background:#fff5f5;}
+    .settings-status[data-state="success"]{color:#065f46;border-color:#bbf7d0;background:#f0fdf4;}
+    @media(max-width:640px){body{padding:24px;} .settings-shell{padding:32px 24px;}}
+  </style>
+</head>
+<body>
+  <div class="settings-shell">
+    <header class="settings-head">
+      <div>
+        <p>Account settings</p>
+        <h1>Manage your FocusLight access</h1>
+        <p>Signed in as <strong id="currentEmail">—</strong></p>
+      </div>
+      <div class="settings-actions">
+        <a href="index.html">Back to board</a>
+        <button id="logoutBtn" type="button">Sign out</button>
+      </div>
+    </header>
+
+    <section class="settings-grid">
+      <form id="emailForm" class="settings-card" autocomplete="off">
+        <h2>Update email</h2>
+        <label>New email<input id="newEmail" type="email" placeholder="you@example.com" required /></label>
+        <label>Current password<input id="emailPassword" type="password" placeholder="Enter password" required /></label>
+        <button class="primary" type="submit">Save email</button>
+      </form>
+      <form id="passwordForm" class="settings-card" autocomplete="off">
+        <h2>Reset password</h2>
+        <label>Current password<input id="currentPassword" type="password" placeholder="Current password" required /></label>
+        <label>New password<input id="newPassword" type="password" placeholder="Minimum 6 characters" minlength="6" required /></label>
+        <label>Confirm new password<input id="confirmPassword" type="password" placeholder="Repeat new password" minlength="6" required /></label>
+        <button class="primary" type="submit">Update password</button>
+      </form>
+      <div class="settings-card">
+        <h2>Need a fresh start?</h2>
+        <p style="margin:0;color:var(--muted);">Export your board inside the main app any time. Settings here only change your login details.</p>
+      </div>
+    </section>
+
+    <div id="settingsStatus" class="settings-status">Changes you make here update immediately for this browser.</div>
+  </div>
+
+    <script type="module">
+    import { supabase } from "./supabase.js";
+
+    const currentEmailEl = document.getElementById("currentEmail");
+    const emailForm = document.getElementById("emailForm");
+    const passwordForm = document.getElementById("passwordForm");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const statusEl = document.getElementById("settingsStatus");
+    let currentUser = null;
+
+    init();
+
+    async function init() {
+      const { data } = await supabase.auth.getSession();
+      const user = data?.session?.user;
+      if (!user) {
+        window.location.href = "login.html";
+        return;
+      }
+      currentUser = user;
+      currentEmailEl.textContent = user.email;
+      emailForm?.addEventListener("submit", handleEmailUpdate);
+      passwordForm?.addEventListener("submit", handlePasswordUpdate);
+      logoutBtn?.addEventListener("click", async () => {
+        await supabase.auth.signOut();
+        window.location.href = "login.html";
+      });
+    }
+
+    async function handleEmailUpdate(event) {
+      event.preventDefault();
+      const newEmail = document.getElementById("newEmail").value.trim().toLowerCase();
+      const password = document.getElementById("emailPassword").value.trim();
+      if (!newEmail) {
+        setStatus("Enter a valid email.", "error");
+        return;
+      }
+      const verified = await verifyPassword(password);
+      if (!verified) return;
+      const { error } = await supabase.auth.updateUser({ email: newEmail });
+      if (error) {
+        setStatus(error.message || "Could not update email.", "error");
+        return;
+      }
+      currentUser = (await supabase.auth.getSession()).data?.session?.user;
+      currentEmailEl.textContent = currentUser?.email || newEmail;
+      emailForm.reset();
+      setStatus("Email updated.", "success");
+    }
+
+    async function handlePasswordUpdate(event) {
+      event.preventDefault();
+      const current = document.getElementById("currentPassword").value.trim();
+      const next = document.getElementById("newPassword").value.trim();
+      const confirm = document.getElementById("confirmPassword").value.trim();
+      if (next.length < 6) {
+        setStatus("New password must be at least 6 characters.", "error");
+        return;
+      }
+      if (next !== confirm) {
+        setStatus("Passwords do not match.", "error");
+        return;
+      }
+      const verified = await verifyPassword(current);
+      if (!verified) return;
+      const { error } = await supabase.auth.updateUser({ password: next });
+      if (error) {
+        setStatus(error.message || "Could not update password.", "error");
+        return;
+      }
+      passwordForm.reset();
+      setStatus("Password updated.", "success");
+    }
+
+    async function verifyPassword(password) {
+      const { error } = await supabase.auth.signInWithPassword({ email: currentUser.email, password });
+      if (error) {
+        setStatus("Password is incorrect.", "error");
+        return false;
+      }
+      return true;
+    }
+
+    function setStatus(message, state = "info") {
+      if (!statusEl) return;
+      statusEl.textContent = message;
+      statusEl.dataset.state = state;
+    }
+  </script>
+
+</body>
+</html>
+

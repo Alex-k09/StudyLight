@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FocusLight • Access</title>
+  <style>
+    :root {
+      --bg: #f8f9fb;
+      --panel: #ffffff;
+      --line: #e4e7f2;
+      --text: #0f172a;
+      --muted: #6b7280;
+      --accent: #171717;
+      --shadow: 0 35px 80px rgba(15, 23, 42, 0.12);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 16px;
+    }
+    .access-grid {
+      width: min(980px, 100%);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 48px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      padding: 48px;
+      box-shadow: var(--shadow);
+      align-items: center;
+    }
+    .access-hero {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 420px;
+    }
+    .access-hero-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 12px;
+      background: #fff;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .access-hero h1 {
+      margin: 8px 0 0;
+      font-size: clamp(34px, 4vw, 46px);
+      letter-spacing: -0.02em;
+    }
+    .access-hero p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .links {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+    .links a {
+      color: var(--text);
+      text-decoration: none;
+      border: 1px solid var(--line);
+      padding: 10px 20px;
+      border-radius: 999px;
+      font-weight: 500;
+    }
+    .auth-panel {
+      background: #fdfdfd;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      max-width: 420px;
+    }
+    .auth-switch {
+      display: inline-flex;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 4px;
+      background: #fff;
+      gap: 4px;
+    }
+    .auth-switch button {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .auth-switch button.active {
+      background: var(--accent);
+      color: #fff;
+    }
+    .form-stack {
+      position: relative;
+      min-height: 300px;
+    }
+    .auth-form {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .auth-form.is-active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    label {
+      font-size: 14px;
+      color: var(--muted);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    input[type="email"],
+    input[type="password"] {
+      height: 48px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      padding: 0 16px;
+      font-size: 15px;
+      background: #fff;
+    }
+    button.primary {
+      height: 48px;
+      border-radius: 14px;
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+    }
+    @media (max-width: 720px) {
+      body { padding: 32px 12px; }
+      .access-grid { padding: 32px 24px; gap: 32px; }
+      .form-stack { min-height: 320px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="access-grid">
+    <section class="access-hero">
+      <div class="access-hero-pill">Study traffic lights</div>
+      <h1>Access your FocusLight board</h1>
+      <p>Sign in to sync every subject and topic. Creating an account keeps your plan safe within this browser profile.</p>
+      <div class="links">
+        <a href="index.html">Back to board</a>
+        <a href="settings.html">Settings</a>
+      </div>
+    </section>
+    <section class="auth-panel">
+      <div class="auth-switch">
+        <button type="button" data-mode="login" class="active">Log in</button>
+        <button type="button" data-mode="signup">Sign up</button>
+      </div>
+      <div class="form-stack">
+        <form id="loginForm" class="auth-form is-active" autocomplete="off">
+          <label>Email<input type="email" name="email" placeholder="you@example.com" required /></label>
+          <label>Password<input type="password" name="password" placeholder="Your password" minlength="6" required /></label>
+          <button class="primary" type="submit">Log in</button>
+        </form>
+        <form id="signupForm" class="auth-form" autocomplete="off">
+          <label>Email<input type="email" name="email" placeholder="you@example.com" required /></label>
+          <label>Password<input type="password" name="password" placeholder="Minimum 6 characters" minlength="6" required /></label>
+          <label>Confirm password<input type="password" name="confirm" placeholder="Repeat password" minlength="6" required /></label>
+          <button class="primary" type="submit">Create account</button>
+        </form>
+      </div>
+    </section>
+  </div>
+    <script type="module">
+    import { supabase } from "./supabase.js";
+
+    const switchButtons = document.querySelectorAll("[data-mode]");
+    const loginForm = document.getElementById("loginForm");
+    const signupForm = document.getElementById("signupForm");
+
+    init();
+
+    async function init() {
+      const { data } = await supabase.auth.getSession();
+      if (data?.session?.user) {
+        window.location.href = "index.html";
+        return;
+      }
+      setMode("login");
+      switchButtons.forEach((btn) => btn.addEventListener("click", () => setMode(btn.dataset.mode || "login")));
+      loginForm?.addEventListener("submit", handleLogin);
+      signupForm?.addEventListener("submit", handleSignup);
+    }
+
+    function setMode(mode) {
+      switchButtons.forEach((btn) => btn.classList.toggle("active", btn.dataset.mode === mode));
+      if (loginForm && signupForm) {
+        loginForm.classList.toggle("is-active", mode === "login");
+        signupForm.classList.toggle("is-active", mode === "signup");
+      }
+    }
+
+    async function handleLogin(event) {
+      event.preventDefault();
+      const email = event.target.email.value.trim().toLowerCase();
+      const password = event.target.password.value.trim();
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        alert(error.message || "Incorrect email or password.");
+        return;
+      }
+      window.location.href = "index.html";
+    }
+
+    async function handleSignup(event) {
+      event.preventDefault();
+      const email = event.target.email.value.trim().toLowerCase();
+      const password = event.target.password.value.trim();
+      const confirm = event.target.confirm.value.trim();
+      if (password !== confirm) {
+        alert("Passwords do not match.");
+        return;
+      }
+      const { error } = await supabase.auth.signUp({ email, password });
+      if (error) {
+        alert(error.message || "Could not create account.");
+        return;
+      }
+      window.location.href = "index.html";
+    }
+  </script>
+
+</body>
+</html>
+
